@@ -1,31 +1,59 @@
-Closes #???
+## Description
 
-This change (choose at least one, delete ones that don't apply):
+<!-- Briefly describe your changes -->
 
-* Breaks existing normative behavior (please add label "breaking")
-* Adds new normative requirements
-* Adds new normative recommendations or optional items
-* Makes editorial changes (changes informative sections, or changes normative sections without changing behavior)
-* Is a "chore" (metadata, formatting, fixing warnings, etc).
+Closes #
 
-Implementation commitment (delete if not making normative changes):
+## Type of Change
 
-* [ ] WebKit (https://bugs.webkit.org)
-* [ ] Chromium (https://bugs.chromium.org/)
-* [ ] Gecko (http://bugzilla.mozilla.org)
+<!-- Check all that apply -->
 
-If change is normative, and it adds or changes a member:
+- [ ] Documentation improvement
+- [ ] Schema update
+- [ ] Example addition/update
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
 
-* [ ] [updated JSON schema](https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/web-manifest.json)
+## Changes Made
 
-Commit message:
+<!-- List specific changes -->
 
-(Fill in. If making normative changes, describe exactly what the behavioral
-difference will be.)
+-
+-
+-
 
-Person merging, please make sure that commits are squashed with one of the following as a commit message prefix:
+## Testing
 
-* chore:
-* editorial:
-* BREAKING CHANGE:
-* And use none if it's a normative change
+<!-- How did you test these changes? -->
+
+### Schema Validation
+
+```bash
+# If schema was modified
+ajv compile -s schema/0.0.1/voice-manifest.schema.json
+
+# Validate examples against schema
+ajv validate -s schema/0.0.1/voice-manifest.schema.json -d "examples/**/voice-manifest.json"
+```
+
+- [ ] Schema compiles successfully
+- [ ] All examples validate against schema
+
+### Documentation
+
+- [ ] Links are working
+- [ ] Code examples are correct
+- [ ] Markdown renders properly
+
+## Checklist
+
+- [ ] I have read the [CONTRIBUTING](../CONTRIBUTING.md) guidelines
+- [ ] My changes follow the project's style guide
+- [ ] I have tested my changes
+- [ ] I have updated relevant documentation
+- [ ] My commits have clear, descriptive messages
+
+## Additional Context
+
+<!-- Any additional information, screenshots, or context -->

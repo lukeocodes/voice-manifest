@@ -1,57 +1,118 @@
-# Contributing 
+# Contributing
 
-Everyone is welcome to contribute to this specification.
+Thanks for your interest in contributing to the Voice Manifest specification!
 
-Any simple editorial contribution can simply be done with a GitHub Pull Request.
-You can even do an inline edit of the file on GitHub.
+## Ways to Contribute
 
-For more substantial contributions, please first [file an issue](https://github.com/w3c/manifest/issues/new) here on Github.
+### Report Issues
 
-Note: Contributions to this repository are intended to become part of Recommendation-track documents governed by the
-[W3C Patent Policy](https://www.w3.org/Consortium/Patent-Policy-20040205/) and
-[Software and Document License](https://www.w3.org/Consortium/Legal/copyright-software). To make substantive contributions to specifications, you must either participate
-in the relevant W3C Working Group or make a non-member patent licensing commitment.
+Found a problem or have a suggestion? [Open an issue](https://github.com/lukeocodes/voice-manifest/issues/new).
 
-If you are not the sole contributor to a contribution (pull request), please identify all 
-contributors in the pull request comment.
+**Good issue reports include**:
 
-To add a contributor (other than yourself, that's automatic), mark them one per line as follows:
+- Clear description of the problem
+- Specific example or use case
+- Expected vs actual behavior (if applicable)
 
+### Improve Documentation
+
+Documentation improvements are always welcome:
+
+- Fix typos or unclear wording
+- Add examples
+- Improve explanations
+- Translate documentation
+
+### Propose Changes
+
+For spec changes:
+
+1. **Discuss first** - Open an issue to discuss your idea before implementing
+2. **Keep it focused** - One feature/fix per pull request
+3. **Provide rationale** - Explain why the change is needed
+4. **Show examples** - Include example manifest snippets
+
+## Making Changes
+
+### Quick Edits
+
+For simple changes (typos, wording):
+
+1. Click the edit button on any file in GitHub
+2. Make your changes
+3. Submit a pull request
+
+### Larger Changes
+
+1. Fork the repository
+2. Create a branch (`git checkout -b feature/your-feature`)
+3. Make your changes
+4. Test your changes (see below)
+5. Commit (`git commit -m 'Add feature'`)
+6. Push (`git push origin feature/your-feature`)
+7. Open a pull request
+
+## Testing Changes
+
+### Schema Changes
+
+If you modify `schema/0.0.1/voice-manifest.schema.json`:
+
+```bash
+# Validate the schema itself
+npm install -g ajv-cli
+ajv compile -s schema/0.0.1/voice-manifest.schema.json
+
+# Test against examples
+ajv validate -s schema/0.0.1/voice-manifest.schema.json -d "examples/**/voice-manifest.json"
 ```
-+@github_username
+
+### Documentation Changes
+
+- Ensure markdown is valid
+- Check all links work
+- Verify code examples are correct
+
+### Example Changes
+
+If you modify examples:
+
+```bash
+# Validate each example
+ajv validate -s schema/0.0.1/voice-manifest.schema.json -d examples/01-absolute-minimum/voice-manifest.json
 ```
 
-If you added a contributor by mistake, you can remove them in a comment with:
+## Style Guide
 
-```
--@github_username
-```
+### JSON
 
-If you are making a pull request on behalf of someone else but you had no part in designing the 
-feature, you can remove yourself with the above syntax.
+- Use 2 spaces for indentation
+- Use double quotes
+- No trailing commas
+- Keep examples realistic
 
+### Markdown
 
-# Style guide to contributors 
+- Use sentence case for headings
+- Keep lines under 120 characters when possible
+- Use code blocks with language tags
+- Link to examples and other docs
 
-- the spec uses [ReSpec](https://www.w3.org/respec/) 
-- the spec is tidied using [HTML5 Tidy](https://github.com/w3c/tidy-html5). For
-instructions on running HTML5 tidy, see below.
-- put comments in front of sections, for better readability with
-  syntax coloring editors.
+### Writing Style
 
+- **Be concise** - Get to the point quickly
+- **Use examples** - Show, don't just tell
+- **Active voice** - "Voice clients connect to..." not "Connection is made by..."
+- **Present tense** - "The manifest defines..." not "The manifest will define..."
 
-# Running HTML5 Tidy
+## Code of Conduct
 
-Please make sure you have HTML5 tidy installed, instead of
-the the one that ships with *nix systems. You can confirm this by running:
+This project follows the [Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.md). By participating, you agree to uphold this code.
 
-```bash 
-tidy --version  #HTML Tidy for HTML5 (experimental) for ...
-```
+## Questions?
 
-Once you have confirmed (make sure you have committed your changes before
-running tidy, as the changes are destructive ... in a good way:)):
+Not sure about something? Open an issue and ask! We're here to help.
 
-```bash 
-tidy -config tidyconfig.txt -o index.html index.html
-```
+## License
+
+By contributing, you agree that your contributions will be licensed under the same [CC BY-NC 2.0](https://creativecommons.org/licenses/by-nc/2.0/) license that covers the project.
