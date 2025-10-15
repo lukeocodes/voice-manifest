@@ -1,0 +1,74 @@
+{
+    "name": "Healthcare Portal",
+    "description": "Voice-enabled patient portal for appointments and prescriptions",
+    "version": "1.0.0",
+    "lang": "en-US",
+    "display": {
+        "activation_phrase": "Talk to my healthcare portal",
+        "call_to_action": "Schedule appointments, refill prescriptions, or get health information",
+        "suggested_prompts": [
+            "Schedule a checkup for next week",
+            "Refill my blood pressure medication",
+            "When is my next appointment?"
+        ]
+    },
+    "system_prompt": "You are a HIPAA-compliant healthcare assistant. Help patients with appointments, prescription refills, and health information. Always protect patient privacy. Never provide medical advice - only help with scheduling and information retrieval. For medical questions, direct patients to speak with their healthcare provider.",
+    "mcp": {
+        "servers": {
+            "ehr": {
+                "url": "https://api.healthcare.internal/mcp",
+                "headers": {
+                    "X-API-Key": "${EHR_API_KEY}"
+                }
+            }
+        }
+    },
+    "agent": {
+        "provider": {
+            "stt": {
+                "name": "deepgram",
+                "endpoint": "https://api.deepgram.com/v1/listen",
+                "model": "nova-2-medical",
+                "language": "en-US",
+                "keywords": [
+                    "prescription",
+                    "appointment",
+                    "medication",
+                    "doctor",
+                    "pharmacy"
+                ],
+                "config": {
+                    "$ref": "./stt-config.json"
+                },
+                "authentication": {
+                    "type": "bearer",
+                    "header": "Authorization"
+                }
+            },
+            "llm": {
+                "name": "openai",
+                "endpoint": "https://api.openai.com/v1/chat/completions",
+                "model": "gpt-4",
+                "temperature": 0.3,
+                "max_tokens": 500,
+                "authentication": {
+                    "type": "bearer",
+                    "header": "Authorization"
+                }
+            },
+            "tts": {
+                "name": "deepgram",
+                "endpoint": "https://api.deepgram.com/v1/speak",
+                "model": "aura-asteria-en",
+                "config": {
+                    "encoding": "linear16",
+                    "sample_rate": 24000
+                },
+                "authentication": {
+                    "type": "bearer",
+                    "header": "Authorization"
+                }
+            }
+        }
+    }
+}

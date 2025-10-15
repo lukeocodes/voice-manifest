@@ -1,0 +1,19 @@
+{
+    "name": "Pasta Paradise",
+    "short_name": "PP",
+    "description": "Authentic Italian dining in Boston",
+    "lang": "en-US",
+    "display": {
+        "icon": "/icons/voice-icon.png",
+        "background_color": "#8B0000",
+        "theme_color": "#8B0000",
+        "activation_phrase": "Talk to Pasta Paradise",
+        "call_to_action": "Ask about our menu or make a reservation",
+        "suggested_prompts": [
+            "What pasta dishes do you have?",
+            "Make a reservation for Friday",
+            "Do you have gluten-free options?",
+            "What are your hours?"
+        ]
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "language": "en-US",
+    "model": "nova-2-medical",
+    "profanity_filter": false,
+    "punctuation": true,
+    "smart_format": true,
+    "interim_results": true,
+    "endpointing": 400,
+    "keywords": [
+        "prescription:2",
+        "medication:2",
+        "appointment:2",
+        "doctor:1.5",
+        "pharmacy:1.5",
+        "insurance:1.5",
+        "diagnosis:2",
+        "symptoms:1.5",
+        "blood pressure:2",
+        "diabetes:2",
+        "cholesterol:2"
+    ],
+    "noise_reduction": true,
+    "automatic_punctuation": true,
+    "diarization": false
+}

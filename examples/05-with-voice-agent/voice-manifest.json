@@ -1,0 +1,42 @@
+{
+    "name": "Premium Store",
+    "short_name": "Premium",
+    "description": "Voice-enabled shopping experience",
+    "version": "1.0.0",
+    "lang": "en-US",
+    "display": {
+        "icon": "/icons/voice-shopping.png",
+        "background_color": "#1E40AF",
+        "theme_color": "#1E40AF",
+        "activation_phrase": "Shop with voice",
+        "call_to_action": "Find products, track orders, or get help",
+        "suggested_prompts": [
+            "Show me wireless headphones under $100",
+            "Where's my order?",
+            "Find blue running shoes in size 10"
+        ]
+    },
+    "system_prompt": "You are a helpful shopping assistant. Help customers find products, track orders, and answer questions. Be enthusiastic about products but never pushy. Always confirm before adding items to cart or placing orders.",
+    "mcp": {
+        "servers": {
+            "ecommerce": {
+                "url": "https://api.premiumstore.com/mcp"
+            }
+        }
+    },
+    "agent": {
+        "provider": {
+            "name": "deepgram",
+            "endpoint": "https://api.deepgram.com/v1/aura",
+            "config": {
+                "voice": "aura-asteria-en",
+                "model": "nova-2",
+                "language": "en-US"
+            },
+            "authentication": {
+                "type": "bearer",
+                "header": "Authorization"
+            }
+        }
+    }
+}

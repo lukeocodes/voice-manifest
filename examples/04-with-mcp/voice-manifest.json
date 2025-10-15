@@ -1,0 +1,32 @@
+{
+    "name": "Pasta Paradise",
+    "short_name": "PP",
+    "description": "Authentic Italian dining with MCP-powered voice assistant",
+    "version": "1.0.0",
+    "lang": "en-US",
+    "scope": "/",
+    "start_url": "/voice",
+    "display": {
+        "icon": "/icons/voice-icon.png",
+        "background_color": "#8B0000",
+        "theme_color": "#8B0000",
+        "activation_phrase": "Talk to Pasta Paradise",
+        "call_to_action": "Ask about our menu or make a reservation",
+        "suggested_prompts": [
+            "What pasta dishes do you have?",
+            "Make a reservation for Friday at 7 PM",
+            "Check my order status",
+            "Do you have gluten-free options?"
+        ]
+    },
+    "system_prompt": {
+        "$ref": "./system-prompt.txt"
+    },
+    "mcp": {
+        "servers": {
+            "restaurant": {
+                "url": "https://api.pastaparadise.com/mcp"
+            }
+        }
+    }
+}
