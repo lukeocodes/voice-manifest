@@ -1,294 +1,642 @@
-## Manifest? Eh? What? Why?
+# Voice Manifest Explainer
 
-[Many of us](https://github.com/w3c/manifest/graphs/contributors) who work on the web are actively working to narrow "the gap" between native applications and web applications.
+**Version 0.0.1** | Released October 15, 2025
 
-But what is that gap? Just a few years ago, that gap was largely technological. If you wanted access to a device’s GPS, you had to write a native app. Nowadays, the situation is improving somewhat: we can now access devices' sensors like GPS, camera, and orientation sensors – though we still have a long way to go. Thanks to recent advances in the web platform we now have a platform that can compete with native applications on a more equal footing.
+## Introduction
 
-Nowadays, the primary gaps between native and web is not so much technological. It’s user experience. Users prefer to install apps, which live snugly on the homescreen (or possibly even the desktop, on desktop-class browsers).
+The **Voice Manifest** (`voice-manifest.json`) makes websites voice-enabled in the same way that the Web App Manifest (`manifest.json`) makes websites installable as Progressive Web Apps.
 
-Furthermore, native apps work offline by default, and integrate with the facilities provided by the underlying operating system: consider being able to see installed applications in the task switcher. Or being able to control an app’s privacy settings in the same place as apps installed from an app store. In browser land, we are still fumbling around trying to find opened tabs and having to type long and boring URLs to get anything done.
+Just as `manifest.json` tells browsers and operating systems "this website can act like a native app," the Voice Manifest tells voice agents, browsers, and operating systems "this website can be interacted with through voice."
 
-What we need is a method of "installing" web apps so they are indistinguishable from any other app installed on a user’s device. But at the same time, we don’t want to lose the powerful features that are central to the web platform: linkability, view source, and the ability to host our own stuff. 
+## The Problem
 
-This is generally what we, in the web community, refer to as a "[progressive web app](https://en.wikipedia.org/wiki/Progressive_web_app)".
+Voice AI is everywhere—in our phones, computers, cars, and smart speakers. Yet websites remain primarily visual interfaces that voice assistants struggle to interact with meaningfully.
 
-## What is "installation"?
+When a user says "book a table at that Italian restaurant," their voice assistant might find the restaurant's website, but has no standardized way to:
 
-At its most basic, "installation" of a web app means "bookmarking" the web application to the homescreen or adding it to an application launcher. There are some pretty obvious things that you, as a developer, would need to provide to the browser so that it can treat your website as an app: the name, icons, etc. There are then more advanced features that you would need, like being able to indicate the preferred orientation and if you want your app to be fullscreen.
+- Understand what voice interactions are possible
+- Know how to execute actions on the user's behalf
+- Provide a consistent voice experience
 
-The Manifest specification aims to give you a standardised way to do this using JSON. In the HTML page to be "installed", simply link to a manifest file, thus:
+## The Solution
 
-```HTML
-<link rel="manifest" href="/manifest.json">
+The Voice Manifest provides a **declarative** way for websites to describe their voice capabilities. It's a simple JSON file that any compatible voice client can read to enable voice interactions.
+
+```html
+<link rel="voice-manifest" href="/voice-manifest.json" />
 ```
 
-But what’s in this mysterious manifest file? Glad you asked!
+### Minimal Example
 
-## A very simple manifest
+The simplest voice-enabled website needs only a name and optionally some display information:
 
-A very simple manifest might just include a name and one or more icons.
-
-```JSON
+```json
 {
-  "name": "Super Racer 3000",
-  "icons": [{
-    "src": "icon/lowres.png",
-    "sizes": "64x64"
-  }]
+  "name": "Pasta Paradise",
+  "display": {
+    "call_to_action": "Ask about our menu or make a reservation",
+    "suggested_prompts": [
+      "What pasta dishes do you have?",
+      "Make a reservation for Friday"
+    ]
+  }
 }
 ```
 
-## A typical manifest
+**That's it!** Any voice client (browser extension, OS feature, voice agent platform) can now:
 
-A typical manifest might look something like the following. The names of the members should be fairly self evident, but we describe their usage in detail below.
+- Detect the site is voice-enabled
+- Show the activation phrase to users
+- Provide suggested prompts
+- Use its own STT/LLM/TTS providers to enable voice interaction
 
-```JSON
+## Core Concepts
+
+### 1. Declaration, Not Configuration
+
+The Voice Manifest is about **what your site can do**, not **how to configure voice providers**.
+
+**This is NOT a configuration file for your voice pipeline.** It's a **public declaration** of your site's voice capabilities, similar to how `manifest.json` declares PWA capabilities.
+
+### 2. Progressive Enhancement
+
+Start simple, add complexity as needed:
+
+- **Minimal**: Just metadata and display hints
+- **+ Functions**: Add function calling for actions
+- **+ System Prompt**: Customize the voice assistant's behavior
+- **+ MCP**: Connect to backend services
+- **+ Agent Config**: Specify preferred voice providers (optional)
+
+### 3. Provider Flexibility
+
+The manifest supports multiple approaches:
+
+**No providers specified** (Browser/OS provides fallback):
+
+```json
 {
-  "lang": "en",
-  "dir": "ltr",
-  "name": "Super Racer 3000",
-  "description": "The ultimate futuristic racing game from the future!",
-  "short_name": "Racer3K",
-  "icons": [{
-    "src": "icon/lowres.webp",
-    "sizes": "64x64",
-    "type": "image/webp"
-  },{
-    "src": "icon/lowres.png",
-    "sizes": "64x64"
-  }, {
-    "src": "icon/hd_hi",
-    "sizes": "128x128"
-  }],
-  "scope": "/racer/",
-  "start_url": "/racer/start.html",
-  "display": "fullscreen",
-  "orientation": "landscape",
-  "theme_color": "aliceblue",
-  "background_color": "red",
-  "screenshots": [{
-    "src": "screenshots/in-game-1x.jpg",
-    "sizes": "640x480",
-    "type": "image/jpeg"
-  },{
-    "src": "screenshots/in-game-2x.jpg",
-    "sizes": "1280x920",
-    "type": "image/jpeg"
-  }]
+  "name": "My Site",
+  "functions": [...]
 }
 ```
 
-## Application name
+**With specific voice agent** (All-in-one solution):
 
-The application needs a real name or set of names (which is usually not the same as the title element of a document). For this you use the `name` and the `short_name` members.
-
-```JSON
+```json
 {
-  "name": "My totally awesome photo app",
-  "short_name": "Photos"
+  "agent": {
+    "provider": {
+      "name": "retell",
+      "endpoint": "https://api.retellai.com/v1",
+      "agent_id": "agent_abc123"
+    }
+  }
 }
 ```
 
-The `short_name` serves as the name for the application when displayed in contexts with constrained space (e.g., under an icon on the homescreen of a phone). 
-The `name` can then be a bit longer, fully capturing the name of the application. 
-This also provides an alternative way for users to search your app on their phone. 
-So, typing ‘awesome’ or ‘photo’ would find the application on a user’s device.
+**With composite STT/LLM/TTS** (Individual components):
 
-If you omit the name, the browser can fall back to using `<meta name="application-name">`, and failing that, the `<title>` element.
-
-Be careful though: some browsers can be quite strict about wanting you to include a `name` - and if omit them, it can invalidate your app from being a "progressive web app".
-
-## Icons
-
-There needs to be an icon associated with a web app, rather than the browser’s icon. To handle this, the manifest has an icons property. This takes a list of icons and their sizes, and format. Having these optional properties makes icon selection really powerful, because it provides a responsive image solution for icons – which can help avoid unnecessary downloads and helps to make sure your icons always look great across a range of devices and screen densities.
-
-```JS
+```json
 {
-  "icons": [{
-    "src": "icon/lowres",
-    "sizes": "64x64",
-    "type": "image/webp"
-  }, {
-    "src": "icon/hd_small",
-    "sizes": "64x64"
-  }, {
-    "src": "icon/hd_hi",
-    "sizes": "128x128",
-  }]
+  "agent": {
+    "provider": {
+      "stt": { "name": "deepgram" },
+      "llm": { "name": "openai", "model": "gpt-4" },
+      "tts": { "name": "elevenlabs" }
+    }
+  }
 }
 ```
-If you omit the icons, the browser just falls back to looking for `<link rel="icon">`, the favicon.ico or, failing that, may even use a screenshot of your website.
 
-### Icon purpose
+## Key Features
 
-TBW.
+### Display Configuration
 
-More information about purpose can be found in the [Web Application Manifest spec](https://www.w3.org/TR/appmanifest/#purpose-member).
+Control how your voice interface appears to users:
 
-## Display modes and orientation
-Apps need to be able to control how they are to be displayed when they start-up. If it’s a game, it might need to be in full-screen and possibly in landscape mode. In order to do this, the manifest format provides you with two properties.
-
-```JSON
+```json
 {
- "display": "fullscreen",
- "orientation": "landscape"
+  "name": "Pasta Paradise",
+  "short_name": "PP",
+  "display": {
+    "icon": "/icons/voice-icon.png",
+    "background_color": "#8B0000",
+    "theme_color": "#8B0000",
+    "activation_phrase": "Talk to Pasta Paradise",
+    "call_to_action": "Ask about our menu or make a reservation",
+    "suggested_prompts": [
+      "What pasta dishes do you have?",
+      "Make a reservation for Friday at 7 PM",
+      "Do you have gluten-free options?"
+    ]
+  }
 }
 ```
 
-For the display modes, the options that you have are:
+These fields help voice clients present your site's capabilities in a user-friendly way.
 
-  * `fullscreen`: take over the whole screen.
-  * `standalone`: opens the app with a status bar.
-  * `minimal-ui`: like on iOS, the app is fullscreen, but certain actions can cause the navigation bar and back/forward buttons to reappear.
-  * `browser`: opens your app with normal browser toolbars and buttons.
+### System Prompt
 
-The nice thing with orientation is that it serves as the "default orientation" for the scope of the application. So, as you navigate from one page to another, your app stays in the correct orientation. You can override the default orientation using the [Screen Orientation API](https://w3c.github.io/screen-orientation/).
+Define how your voice assistant should behave:
 
-You can also style apps that are in a particular display mode by using the `display-mode` media feature:
-
-```CSS
-@media all and (display-mode: standalone){
-  ...
-}
-```
-
-And use JavaScript `window.matchMedia()` to test that media query in JavaScript.
-
-```JS
-if (window.matchMedia("(display-mode: standalone)").matches) {
-  // do interesting UI adjustments
-}
-```
-
-## Start URL
-
-Sometimes you want to make sure that when the user starts up an app, they always go to a particular page first. The `start_url` property gives you a way of indicating this.
-
-```JSON
+```json
 {
- "start_url": "/start_screen.html"
+  "system_prompt": "You are a helpful assistant for Pasta Paradise restaurant. Help customers with menu questions, reservations, and general information. Be warm, friendly, and knowledgeable about Italian cuisine."
 }
 ```
 
-## "Scope" of the app
-Native applications have clear "boundaries": as a user, you know when you open a native application that it won’t suddenly open a different application without you noticing. When switching from one native application to another is often pretty clear that you’ve switched applications. These visual cues are often provided by the underlying operating system (think of bringing up the task manager and picking a different application – or pressing "command/alt-tab" on your desktop machine).
+Or reference an external file:
 
-The web is very different: it’s a huge hypertextual system where web applications can span multiple domains: you can seamlessly jump from "gmail.com" to "docs.google.com" and as a user have no idea that you’ve jumped form one "origin" to another. In fact, the whole idea that there are boundaries to an application is totally foreign on the Web as, in reality, a web application is just a series of HTML documents (think, "a series of tubes"… no, don’t think that!).
-
-On the web, the only reason we know that we’ve left the scope of one application and entered into another application is because the web designers have been kind enough to make their websites look uniquely different. In case where they haven’t, a lot of users have also been tricked by sites masquerading as another site (the ol’ "phishing attack").
-
-The manifest format assist with this problem by allowing you to specify a "URL scope" for your application. This scope sets a boundary for an app. It can either be a domain or a directory within that domain.
-
-```JSON
+```json
 {
-  "scope": "/myapp"
+  "system_prompt": {
+    "$ref": "./prompts/system-prompt.txt"
+  }
 }
 ```
 
-## Internationalization: lang and dir
-TBW...
+### Function Calling
 
-## Distributing your app
-TBW: using description and screenshots.
+Define actions using OpenAI's function calling standard:
 
-## Theme color and background color
-TBW...
-
-## Adding shortcuts
-Numerous operating systems grant native applications the ability to add menu items to the app icon itself. These often provide quick access to key tasks for an app. Typically, these are exposed via a right click, long tap, or a similar context menu-triggering action. For web applications, you can define a set of shortcuts to be exposed when the app is installed. Each shortcut item must have a name and a target URL. You may also include additional information, such as a shorter name, a description for the action, and one or more icons.
-
-```JSON
-"shortcuts": [
-  {
-    "name": "Play Later",
-    "description": "View the list of podcasts you saved for later",
-    "url": "/play-later",
-    "icons": [
-      {
-        "src": "/icons/play-later.svg",
-        "type": "image/svg+xml",
-        "purpose": "any"
+```json
+{
+  "functions": [
+    {
+      "name": "make_reservation",
+      "description": "Create a dining reservation",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Reservation date (YYYY-MM-DD)"
+          },
+          "time": {
+            "type": "string",
+            "format": "time",
+            "description": "Reservation time (HH:MM)"
+          },
+          "party_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "description": "Number of guests"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name for the reservation"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Contact phone number"
+          }
+        },
+        "required": ["date", "time", "party_size", "name", "phone"]
       }
+    }
+  ]
+}
+```
+
+### MCP Integration (Optional)
+
+Connect to Model Context Protocol servers for tool discovery:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "restaurant": {
+        "url": "https://api.restaurant.com/mcp"
+      }
+    }
+  }
+}
+```
+
+Voice clients connect to this URL to discover available tools, resources, and prompts via the MCP protocol. Your MCP server must already be running and accessible at this endpoint.
+
+### Voice Agent Configuration (Optional)
+
+Specify preferred voice providers if you have specific requirements:
+
+**All-in-one voice agent:**
+
+```json
+{
+  "agent": {
+    "provider": {
+      "name": "retell",
+      "endpoint": "https://api.retellai.com/v1",
+      "agent_id": "agent_abc123",
+      "config": {
+        "voice_id": "professional-female-us",
+        "voice_speed": 1.0,
+        "interruption_sensitivity": 0.5
+      }
+    }
+  }
+}
+```
+
+**Composite STT/LLM/TTS:**
+
+```json
+{
+  "agent": {
+    "provider": {
+      "stt": {
+        "name": "deepgram",
+        "model": "nova-2",
+        "keywords": ["pasta", "reservation", "gluten-free"]
+      },
+      "llm": {
+        "name": "openai",
+        "model": "gpt-4",
+        "temperature": 0.7
+      },
+      "tts": {
+        "name": "elevenlabs",
+        "voice_id": "clara-italian-warmth"
+      }
+    }
+  }
+}
+```
+
+**Important**: You can specify providers, but voice clients can use their own fallbacks if:
+
+- Providers aren't specified
+- Specified providers aren't available
+- Users prefer different providers
+
+## Complete Examples
+
+### 1. Minimal Restaurant
+
+```json
+{
+  "$schema": "https://voicemanifest.org/voice-manifest/schema/0.0.1/voice-manifest.schema.json",
+  "name": "Pasta Paradise",
+  "description": "Authentic Italian dining in Boston",
+  "display": {
+    "activation_phrase": "Talk to Pasta Paradise",
+    "call_to_action": "Ask about our menu or make a reservation",
+    "suggested_prompts": [
+      "What pasta dishes do you have?",
+      "Make a reservation for Friday at 7 PM",
+      "Do you have gluten-free options?"
     ]
   },
-  {
-    "name": "Subscriptions",
-    "description": "View the list of podcasts you listen to",
-    "url": "/subscriptions",
-    "icons": [
-      {
-        "src": "/icons/subscriptions.svg",
-        "type": "image/svg+xml",
-        "purpose": "any"
+  "system_prompt": "You are a helpful assistant for Pasta Paradise restaurant. Help customers with menu questions, reservations, and general information.",
+  "functions": [
+    {
+      "name": "get_menu",
+      "description": "Get menu items with optional filters",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": ["appetizers", "pasta", "mains", "desserts"]
+          }
+        },
+        "required": []
       }
-    ]
-  },
-  {
-    "name": "Search",
-    "description": "Search for new podcasts to listen to",
-    "url": "/search",
-    "icons": [
-      {
-        "src": "/icons/search.svg",
-        "type": "image/svg+xml",
-        "purpose": "any"
+    },
+    {
+      "name": "make_reservation",
+      "description": "Create a dining reservation",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "date": { "type": "string", "format": "date" },
+          "time": { "type": "string", "format": "time" },
+          "party_size": { "type": "integer" },
+          "name": { "type": "string" },
+          "phone": { "type": "string" }
+        },
+        "required": ["date", "time", "party_size", "name", "phone"]
       }
-    ]
-  },
-  {
-    "name": "Discover",
-    "description": "Browse for new podcasts to listen to",
-    "url": "/discover",
-    "icons": [
-      {
-        "src": "/icons/discover.svg",
-        "type": "image/svg+xml",
-        "purpose": "any"
-      }
-    ]
-  }  
-]
+    }
+  ]
+}
 ```
 
-## How can I detect if the user "installed" my app?
-The spec provides a way for you to detect when the user installs your apps by registering for "appinstalled" events.
+### 2. E-Commerce with Voice Agent
 
-```JS
-function handleInstalled(ev) {
-  const date = new Date(ev.timeStamp / 1000);
-  console.log(`Yay! Our app got installed at ${date.toTimeString()}`);
+```json
+{
+  "$schema": "https://voicemanifest.org/voice-manifest/schema/0.0.1/voice-manifest.schema.json",
+  "name": "Premium Store",
+  "description": "Voice-enabled shopping experience",
+  "display": {
+    "activation_phrase": "Shop with voice",
+    "suggested_prompts": [
+      "Show me wireless headphones under $100",
+      "Where's my order?",
+      "Find blue running shoes"
+    ]
+  },
+  "system_prompt": "You are a helpful shopping assistant. Help customers find products and track orders.",
+  "functions": [
+    {
+      "name": "search_products",
+      "description": "Search for products",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "max_price": { "type": "number" }
+        },
+        "required": ["query"]
+      }
+    }
+  ],
+  "agent": {
+    "provider": {
+      "name": "retell",
+      "endpoint": "https://api.retellai.com/v1",
+      "agent_id": "agent_ecommerce_abc123"
+    }
+  }
+}
+```
+
+### 3. Healthcare with Composite Agents + MCP
+
+```json
+{
+  "$schema": "https://voicemanifest.org/voice-manifest/schema/0.0.1/voice-manifest.schema.json",
+  "name": "Healthcare Portal",
+  "description": "Voice-enabled patient portal",
+  "display": {
+    "suggested_prompts": [
+      "Schedule a checkup",
+      "Refill my prescription",
+      "When is my next appointment?"
+    ]
+  },
+  "system_prompt": "You are a HIPAA-compliant healthcare assistant. Help patients with appointments and prescriptions. Never provide medical advice.",
+  "functions": [
+    {
+      "name": "schedule_appointment",
+      "description": "Schedule a medical appointment",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "appointment_type": {
+            "type": "string",
+            "enum": ["checkup", "follow-up", "specialist"]
+          },
+          "preferred_date": { "type": "string", "format": "date" }
+        },
+        "required": ["appointment_type"]
+      }
+    }
+  ],
+  "agent": {
+    "provider": {
+      "stt": {
+        "name": "deepgram",
+        "model": "nova-2-medical",
+        "keywords": ["prescription", "appointment", "medication"]
+      },
+      "llm": {
+        "name": "openai",
+        "model": "gpt-4",
+        "temperature": 0.3
+      },
+      "tts": {
+        "name": "elevenlabs",
+        "voice_id": "professional-calm-female",
+        "speaking_rate": 0.9
+      }
+    }
+  },
+  "mcp": {
+    "servers": {
+      "ehr": {
+        "url": "https://api.healthcare.internal/mcp"
+      }
+    }
+  },
+  "privacy": {
+    "data_retention": "Voice recordings deleted immediately. Transcripts retained 7 days per HIPAA.",
+    "recording_consent": true,
+    "pii_handling": "encrypt"
+  }
+}
+```
+
+## How It Works: The Flow
+
+1. **User visits your website**
+2. **Voice client** (browser, extension, OS) **discovers** `<link rel="voice-manifest">`
+3. **Voice client reads** the manifest
+4. **Voice client shows** activation UI with your branding and suggested prompts
+5. **User activates** voice interaction
+6. **Voice client uses**:
+   - Your system prompt to guide behavior
+   - Your functions to understand available actions
+   - Your specified providers OR its own fallbacks
+   - Your MCP servers to execute actions
+7. **Actions are executed** and responses provided to user
+
+## Provider Fallback Strategy
+
+This is a key feature that makes the Voice Manifest flexible:
+
+**If you specify no providers:**
+
+- Voice clients use their own (browser plugins, OS features, etc.)
+- Example: Deepgram browser extension provides STT/LLM/TTS
+
+**If you specify some providers:**
+
+- Voice clients use what you specify
+- Fall back to their own for unspecified components
+- Example: You specify LLM, client provides STT/TTS
+
+**If you specify a voice agent:**
+
+- Voice clients use your all-in-one solution
+- Voice agent provider handles STT/LLM/TTS
+- Example: Your Retell agent does everything
+
+**If you specify composite (STT/LLM/TTS):**
+
+- Voice clients use your specified components
+- Can still fall back if any fail
+- Example: Your Deepgram + OpenAI + ElevenLabs stack
+
+## Mutual Exclusivity
+
+**Voice Agent OR Composite** - not both:
+
+```json
+// ✅ Valid - Voice agent only
+{
+  "agent": {
+    "provider": {
+      "name": "retell",
+      "endpoint": "..."
+    }
+  }
 }
 
-// Using the event handler IDL attribute
-window.onappinstalled = handleInstalled;
+// ✅ Valid - Composite only
+{
+  "agent": {
+    "provider": {
+      "stt": {...},
+      "llm": {...},
+      "tts": {...}
+    }
+  }
+}
 
-// Using .addEventListener()
-window.addEventListener("appinstalled", handleInstalled);
+// ❌ Invalid - Cannot mix
+{
+  "agent": {
+    "provider": {
+      "name": "retell",
+      "stt": {...}  // ERROR: voice agent provides STT
+    }
+  }
+}
 ```
 
-However, for privacy reasons, you can't directly detect if your application is installed - only if the manifest is being used with your web application.
+## Real-World Use Cases
 
-## What’s wrong with `<meta>` tags?
-During the specification discussions, it was hotly debated whether to use `<meta>` tags in HTML rather than make a new format. After all, the Chrome implementation of Add to Home screen uses `<meta>` tags, and this has been the natural home for proprietary flimflam since the web began.
+### Restaurants & Hospitality
 
-The reasons for including a separate file are
+- **Reservations**: "Book a table for four tomorrow at 7"
+- **Menu inquiries**: "What vegetarian options do you have?"
+- **Takeout orders**: "Order the usual for pickup"
 
- * it saves loading every page of an installable app/site with tons of header info
- * once downloaded, the file sits in the browsers’s HTTP cache.
+### E-Commerce
 
-More details about [why we chose JSON instead of the html tags](https://www.w3.org/TR/appmanifest/#relationship-to-html-s-link-and-meta-elements) can be found in the spec.
+- **Product search**: "Show me wireless headphones under $100"
+- **Order tracking**: "Where's my order?"
+- **Shopping**: "Add size medium to my cart"
 
-## Who is implementing this
+### Healthcare
 
-The manifest, and Progressive Web Apps are implemented in Chrome, Opera, and Samsung Internet for Android. There are positive signals from Firefox that they will support this standard too (it has been implemented in Gecko for over 2 years, but not shipping in any products yet).
+- **Appointments**: "Schedule a checkup next Tuesday"
+- **Prescriptions**: "Refill my blood pressure medication"
+- **Information**: "When are you open?"
 
-## Interaction with Web Crawlers
+### Banking & Finance
 
-Like other web resources, a web application manifest should be accessible to any web browser or web crawler.
+- **Balance**: "What's my checking balance?"
+- **Transfers**: "Transfer $50 to savings"
+- **Bill pay**: "Pay my electric bill"
 
-If a web app developer wants to inform web crawlers of a desire for the file not to be crawled, the developer MAY do so by including the web application manifest in a robots.txt file.
-This is further described in the [robots.txt](http://www.robotstxt.org/) protocol.
-A web app developer could also use the `X-Robots-Tag` HTTP header.
+### Travel
 
-## Attribution
-The bulk of this explainer originally appeared in [HTML5 Doctor](http://html5doctor.com/) as "[The W3C App Manifest specification](http://html5doctor.com/web-manifest-specification/)", and was written by [Marcos Cáceres](https://github.com/marcoscaceres) and [Bruce Lawson](https://www.brucelawson.co.uk/). This derivative work is allowed by the [Creative Commons Attribution-Non-Commercial 2.0](https://creativecommons.org/licenses/by-nc/2.0/uk/) license of the original document. Thus, feel free to change, reuse, modify, and extend this explainer. Some authors will retain their copyright on certain articles.
+- **Booking**: "Book a window seat on the morning flight"
+- **Hotel**: "Find hotels near the conference"
+- **Information**: "What's my confirmation number?"
+
+## Implementation
+
+### Step 1: Create the Manifest
+
+Start with the basics:
+
+```json
+{
+  "name": "Your Site",
+  "display": {
+    "suggested_prompts": ["What can you help with?"]
+  },
+  "system_prompt": "You are a helpful assistant for [your site].",
+  "functions": [...]
+}
+```
+
+### Step 2: Link from HTML
+
+```html
+<link rel="voice-manifest" href="/voice-manifest.json" />
+```
+
+### Step 3: Implement Function Handlers
+
+When voice clients call your functions, you need to handle them. This typically means:
+
+- **REST API endpoints** that execute the functions
+- **MCP server** that provides the tools
+- **Webhook handlers** that process requests
+
+### Step 4: Test
+
+Use voice clients that support Voice Manifest:
+
+- Browser extensions
+- Voice agent platforms
+- OS-level voice features
+- Testing tools
+
+## Privacy & Security
+
+### Privacy Considerations
+
+```json
+{
+  "privacy": {
+    "data_retention": "Voice data retained for 30 days",
+    "recording_consent": true,
+    "pii_handling": "encrypt",
+    "privacy_policy": "https://example.com/privacy"
+  }
+}
+```
+
+### Security Best Practices
+
+1. **Never expose API keys** in the manifest
+2. **Use authentication** for sensitive functions
+3. **Validate all inputs** server-side
+4. **Rate limit** voice interactions
+5. **Log security events**
+6. **HTTPS only** for all endpoints
+
+## Comparison to manifest.json
+
+| Feature                 | manifest.json                | voice-manifest.json                  |
+| ----------------------- | ---------------------------- | ------------------------------------ |
+| **Purpose**             | Make site installable as PWA | Make site voice-enabled              |
+| **Discovery**           | `<link rel="manifest">`      | `<link rel="voice-manifest">`        |
+| **Required fields**     | name, icons                  | name                                 |
+| **Display config**      | icons, colors, display mode  | activation phrase, suggested prompts |
+| **Functionality**       | Declares PWA capabilities    | Declares voice capabilities          |
+| **Provider config**     | N/A                          | Optional voice providers             |
+| **Backend integration** | Service workers              | Functions + optional MCP             |
+
+## Specification Status
+
+The Voice Manifest is currently in **early proposal stage** (October 2025).
+
+We're seeking feedback from:
+
+- Voice platform providers
+- Browser vendors
+- Web developers
+- Standards organizations
+
+## Contributing
+
+We welcome contributions and feedback! See the repository for:
+
+- **Examples**: Complete working examples
+- **Schema**: JSON Schema for validation
+- **Documentation**: Detailed guides and references
+
+## License
+
+This work is licensed under a [Creative Commons Attribution-NonCommercial 2.0](https://creativecommons.org/licenses/by-nc/2.0/uk/) license.
