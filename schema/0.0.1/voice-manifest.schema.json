@@ -1,0 +1,419 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://voicemanifest.org/schema/0.0.1/voice-manifest.schema.json",
+    "title": "Voice Manifest",
+    "description": "A manifest file that enables voice capabilities for websites and applications, similar to how manifest.json enables PWA features",
+    "version": "0.0.1",
+    "type": "object",
+    "required": [
+        "name"
+    ],
+    "properties": {
+        "name": {
+            "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/manifest/properties/name"
+        },
+        "short_name": {
+            "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/manifest/properties/short_name"
+        },
+        "description": {
+            "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/manifest/properties/description"
+        },
+        "version": {
+            "type": "string",
+            "description": "Version of this manifest (semver recommended)",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "lang": {
+            "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/manifest/properties/lang"
+        },
+        "dir": {
+            "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/manifest/properties/dir"
+        },
+        "scope": {
+            "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/manifest/properties/scope"
+        },
+        "start_url": {
+            "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/manifest/properties/start_url"
+        },
+        "display": {
+            "type": "object",
+            "description": "How the voice interface should be displayed to users",
+            "properties": {
+                "icon": {
+                    "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/icon_with_purpose"
+                },
+                "background_color": {
+                    "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/manifest/properties/background_color"
+                },
+                "theme_color": {
+                    "$ref": "https://json.schemastore.org/web-manifest-combined.json#/definitions/manifest/properties/theme_color"
+                },
+                "activation_phrase": {
+                    "type": "string",
+                    "description": "Suggested wake phrase to activate voice for this site (e.g., 'Talk to [site name]')"
+                },
+                "call_to_action": {
+                    "type": "string",
+                    "description": "CTA text shown in voice UI (e.g., 'Ask me about our menu')"
+                },
+                "suggested_prompts": {
+                    "type": "array",
+                    "description": "Suggested questions/commands to show users",
+                    "items": {
+                        "type": "string"
+                    },
+                    "maxItems": 10
+                }
+            }
+        },
+        "system_prompt": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "description": "Inline system prompt text"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "$ref": {
+                            "type": "string",
+                            "description": "Path to external system prompt file"
+                        }
+                    },
+                    "required": [
+                        "$ref"
+                    ]
+                }
+            ],
+            "description": "System prompt that defines the voice assistant's behavior and personality. Used by voice clients when interacting with MCP servers."
+        },
+        "mcp": {
+            "type": "object",
+            "description": "Model Context Protocol server endpoints. Voice clients connect to these HTTP/SSE endpoints to discover available tools, resources, and prompts.",
+            "properties": {
+                "servers": {
+                    "type": "object",
+                    "description": "Named MCP server endpoints that the voice client should connect to",
+                    "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                            "url"
+                        ],
+                        "properties": {
+                            "url": {
+                                "type": "string",
+                                "format": "uri",
+                                "description": "MCP server endpoint URL (HTTP or SSE)"
+                            },
+                            "headers": {
+                                "type": "object",
+                                "additionalProperties": {
+                                    "type": "string"
+                                },
+                                "description": "Optional HTTP headers for authentication (e.g., Authorization, API-Key)"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "agent": {
+            "type": "object",
+            "description": "Optional voice agent configuration",
+            "properties": {
+                "provider": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "description": "All-in-one voice agent provider (mutually exclusive with stt/llm/tts)",
+                            "required": [
+                                "name",
+                                "endpoint"
+                            ],
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "Provider name (e.g., 'deepgram', 'retell', 'vapi', 'elevenlabs', 'bland')"
+                                },
+                                "endpoint": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "description": "Voice agent API endpoint"
+                                },
+                                "api_version": {
+                                    "type": "string",
+                                    "description": "API version"
+                                },
+                                "agent_id": {
+                                    "type": "string",
+                                    "description": "Specific agent/assistant ID"
+                                },
+                                "config": {
+                                    "oneOf": [
+                                        {
+                                            "type": "string",
+                                            "description": "Path to external config file"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "description": "Inline provider-specific configuration",
+                                            "additionalProperties": true
+                                        }
+                                    ]
+                                },
+                                "authentication": {
+                                    "$ref": "#/definitions/authentication"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "description": "Composite STT/LLM/TTS configuration",
+                            "properties": {
+                                "stt": {
+                                    "$ref": "#/definitions/sttProvider"
+                                },
+                                "llm": {
+                                    "$ref": "#/definitions/llmProvider"
+                                },
+                                "tts": {
+                                    "$ref": "#/definitions/ttsProvider"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "privacy": {
+            "type": "object",
+            "description": "Privacy and data handling policies",
+            "properties": {
+                "data_retention": {
+                    "type": "string",
+                    "description": "Data retention policy description"
+                },
+                "recording_consent": {
+                    "type": "boolean",
+                    "description": "Whether explicit recording consent is required",
+                    "default": true
+                },
+                "pii_handling": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "anonymize",
+                        "encrypt",
+                        "store"
+                    ],
+                    "description": "How personally identifiable information is handled",
+                    "default": "encrypt"
+                },
+                "privacy_policy": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Link to privacy policy"
+                }
+            }
+        },
+        "metadata": {
+            "type": "object",
+            "description": "Additional metadata",
+            "properties": {
+                "author": {
+                    "type": "string",
+                    "description": "Author name or organization"
+                },
+                "homepage": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Website homepage"
+                },
+                "documentation": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Documentation URL"
+                },
+                "support": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Support/contact URL"
+                },
+                "license": {
+                    "type": "string",
+                    "description": "License identifier (SPDX)"
+                }
+            }
+        }
+    },
+    "definitions": {
+        "sttProvider": {
+            "type": "object",
+            "description": "Speech-to-Text provider configuration",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Provider name (e.g., 'deepgram', 'google-speech', 'azure-speech', 'whisper')"
+                },
+                "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "STT API endpoint (if custom)"
+                },
+                "model": {
+                    "type": "string",
+                    "description": "STT model identifier"
+                },
+                "language": {
+                    "type": "string",
+                    "description": "Language code for STT"
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Domain-specific keywords for improved recognition"
+                },
+                "config": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "Path to external config file"
+                        },
+                        {
+                            "type": "object",
+                            "description": "Inline configuration",
+                            "additionalProperties": true
+                        }
+                    ]
+                },
+                "authentication": {
+                    "$ref": "#/definitions/authentication"
+                }
+            }
+        },
+        "llmProvider": {
+            "type": "object",
+            "description": "Large Language Model provider configuration",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Provider name (e.g., 'openai', 'anthropic', 'azure-openai', 'google-vertex')"
+                },
+                "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "LLM API endpoint (if custom)"
+                },
+                "model": {
+                    "type": "string",
+                    "description": "LLM model identifier (e.g., 'gpt-4', 'claude-3-5-sonnet')"
+                },
+                "temperature": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 2,
+                    "description": "Response randomness (0-2)"
+                },
+                "max_tokens": {
+                    "type": "integer",
+                    "description": "Maximum tokens per response"
+                },
+                "config": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "Path to external config file"
+                        },
+                        {
+                            "type": "object",
+                            "description": "Inline configuration",
+                            "additionalProperties": true
+                        }
+                    ]
+                },
+                "authentication": {
+                    "$ref": "#/definitions/authentication"
+                }
+            }
+        },
+        "ttsProvider": {
+            "type": "object",
+            "description": "Text-to-Speech provider configuration",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Provider name (e.g., 'elevenlabs', 'google-tts', 'azure-tts', 'openai-tts')"
+                },
+                "endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "TTS API endpoint (if custom)"
+                },
+                "voice_id": {
+                    "type": "string",
+                    "description": "Voice identifier"
+                },
+                "model": {
+                    "type": "string",
+                    "description": "TTS model identifier"
+                },
+                "speaking_rate": {
+                    "type": "number",
+                    "minimum": 0.5,
+                    "maximum": 2.0,
+                    "description": "Speaking rate multiplier"
+                },
+                "config": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "description": "Path to external config file"
+                        },
+                        {
+                            "type": "object",
+                            "description": "Inline configuration",
+                            "additionalProperties": true
+                        }
+                    ]
+                },
+                "authentication": {
+                    "$ref": "#/definitions/authentication"
+                }
+            }
+        },
+        "authentication": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "api_key",
+                        "bearer",
+                        "oauth2",
+                        "custom"
+                    ],
+                    "description": "Authentication method"
+                },
+                "header": {
+                    "type": "string",
+                    "description": "Header name for API key or bearer token"
+                },
+                "token_endpoint": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Token endpoint for OAuth2"
+                },
+                "scopes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "OAuth2 scopes"
+                }
+            }
+        }
+    }
+}
